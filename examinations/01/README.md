@@ -63,4 +63,4 @@ Can you run a command on a remote host via SSH? How?
 Answer: Yes, it is possible to run commands on a remote host through SSH without logging in interactively.
 After setting up passwordless SSH between the webserver and dbserver, I could execute commands directly from one machine to the other.
 
-For example, from the webserver I ran:
+For example, from the webserver I ran: ssh deploy@<dbserver_ip> 'hostname'
