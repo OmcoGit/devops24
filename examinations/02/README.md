@@ -112,9 +112,61 @@ incompatibilities.
 
 What happens if you run `ansible-inventory --list` in the directory you created above?
 
+**Answer**:
+Running ansible-inventory --list outputs the inventory in JSON format. It shows all groups (db, web, ungrouped) and the hosts in each group. It also displays host variables, such as ansible_user and ansible_ssh_private_key_file.
+
+ 
+ This output represents how Ansible interprets the hosts file and organizes the hosts and groups internally.
+
+ ```bash
+ {
+    "_meta": {
+        "hostvars": {
+            "192.168.121.105": {
+                "ansible_ssh_private_key_file": "/home/oms/Documents/devops24/lab_environment/deploy_key",
+                "ansible_user": "deploy"
+            },
+            "192.168.121.118": {
+                "ansible_ssh_private_key_file": "/home/oms/Documents/devops24/lab_environment/deploy_key",
+                "ansible_user": "deploy"
+            }
+        }
+    },
+    "all": {
+        "children": [
+            "ungrouped",
+            "db",
+            "web"
+        ]
+    },
+    "db": {
+        "hosts": [
+            "192.168.121.105"
+        ]
+    },
+    "web": {
+        "hosts": [
+            "192.168.121.118"
+        ]
+    }
+}
+```
+
 ## QUESTION B
 
 What happens if you run `ansible-inventory --graph` in the directory you created above?
+
+**Answer**: Running ansible-inventory --graph shows a text-based graph of the inventory.
+It displays all groups and the hosts in each group, giving a clear overview of the structure of the inventory.
+
+Example output:
+```bash
+@all:
+  |--@db:
+  |  |--192.168.121.105
+  |--@web:
+  |  |--192.168.121.118
+  ```
 
 ## QUESTION C
 
@@ -131,6 +183,13 @@ Now run:
 Study the output of this command.
 
 What does the `ansible_connection=local` part mean?
+
+**Answer**: 
+The ansible_connection=local part means that Ansible will run tasks directly on the local machine instead of connecting via SSH.
+
+ Normally, Ansible uses SSH to manage remote hosts, but with ansible_connection=local, it executes modules on the host where Ansible is running.
+
+ This is useful when you want to manage your own machine or run tasks locally without SSH.
 
 ## BONUS QUESTION
 
@@ -152,4 +211,13 @@ In your Ansible working directory where the `ansible.cfg' is, run
 
 You should get a pager displaying all available configuration values. How does it differ
 from when you run the same command in your usual home directory?
+
+**Answer**: 
+Running ansible-config dump in your working directory shows all effective configuration values, including any overrides from your local ansible.cfg (e.g., inventory = hosts, host_key_checking = False).
+
+In your home directory, where there is no local ansible.cfg, only the default values are shown (e.g., inventory = /etc/ansible/hosts).
+
+This demonstrates that Ansible uses a hierarchy: local ansible.cfg > environment variables > defaults, and local configuration overrides the defaults.
+
+Additionally, in the ansible-config dump output, values from your local ansible.cfg are often highlighted in orange or yellow, while default values appear in green. This visually indicates which settings are overridden locally versus which ones are just defaults.
 
