@@ -121,10 +121,36 @@ Run the exact same playbook again and study the output. What is the difference?
 
 What does the `ansible.builtin.debug` module actually do?
 
+Answer: The ansible.builtin.debug module is used to display messages or the values of variables during playbook execution. 
+
+It does not make any changes on the managed hosts. It is mainly used for debugging, testing, or inspecting variables in your playbooks.
+
+Example:
+```bash
+- name: Output hostname
+  ansible.builtin.debug:
+    var: ansible_facts.nodename
+```
+This will print the value of ansible_facts.nodename for each host, helping you see the hostname without changing anything on the system.
+
+In short: It’s a safe way to output information for visibility and troubleshooting.
+
 ## QUESTION B
 
 What is the variable 'ansible_facts' and where does it come from?
 
+***Answer:***
+ansible_facts is a dictionary of information about each managed host, automatically gathered by Ansible when the playbook runs. 
+
+Ansible collects these facts by running the setup module on the remote host, which inspects the system (hostname, OS, IP addresses, CPU, memory, etc.) and returns the data to the control node.
+
+Example from my playbook:
+```bash
+- name: Output hostname
+  ansible.builtin.debug:
+    var: ansible_facts.nodename
+```
+This prints the hostname of each host using the gathered facts.
 ## QUESTION C
 
 We now know how to use Ansible to perform changes, and to ensure these changes are still there
@@ -134,6 +160,24 @@ How do we now remove the software we installed through the playbook above? Make 
 playbook remove the exact same software we previously installed. Call the created
 playbook `03-uninstall-software.yml`.
 
+***Answer:*** To remove the previously installed software, you create a new playbook that sets the state of the packages to absent. This tells Ansible to ensure the packages are removed.
+
+Example playbook (03-uninstall-software.yml):
+```bash
+- name: Uninstall our favorite software
+  hosts: all
+  tasks:
+    - name: Remove vim, bash-completion, and qemu-guest-agent
+      become: true
+      ansible.builtin.package:
+        name: vim,bash-completion,qemu-guest-agent
+        state: absent
+```
+First run: Ansible removes the packages → changed=1.
+
+Subsequent runs: Nothing to remove → changed=0 (idempotent).
+
+In short: Use state: absent in the package task to uninstall software.
 ## BONUS QUESTION
 
 What happens when you run `ansible-playbook` with different options?
@@ -142,6 +186,14 @@ Explain what each of these options do:
 * --verbose, -vv, -vvv, -vvvv
 * --check
 * --syntax-check
+
+***Answer:*** --verbose, -vv, -vvv, -vvvv: Increase the amount of output. More vs show more detail, from basic task info (-v) to full debug and SSH communication (-vvvv).
+
+--check: Runs the playbook in “dry run” mode, showing what would change without actually making changes.
+
+--syntax-check: Checks the syntax of your playbook without executing any tasks, useful for catching errors early.
+
+In short: These options help you debug, preview, or validate playbooks safely.
 
 ## Study Material & Documentation
 
