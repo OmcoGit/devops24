@@ -76,6 +76,14 @@ What does the output look like the first time you run this playbook?
 
 What does the output look like the second time you run this playbook?
 
+***Answer:*** First run: Ansible reports changed: true for the copying of https.conf.
+
+Second run: Ansible reports changed: false and ok, because the file already exists and did not need to be changed.
+
+In short:
+
+The first run modified the system (changed: true), while the second run made no changes (changed: false).
+
 # QUESTION B
 
 Even if we have copied the configuration to the right place, we still do not have a working https service
@@ -114,12 +122,38 @@ Again, these addresses are just examples, make sure you use the IP of the actual
 Note also that `curl` needs the `--insecure` option to establish a connection to a HTTPS server with
 a self signed certificate.
 
+***Answer:*** We can manage the restart of nginx through Ansible by adding a task that uses the ansible.builtin.service module. 
+
+After copying the HTTPS configuration file to
+ /etc/nginx/conf.d/https.conf, we include a task like this in the playbook:
+ ```yaml
+ - name: Restart nginx
+  ansible.builtin.service:
+    name: nginx
+    state: restarted
+```
+This ensures that nginx automatically reads the new configuration and starts listening on port 443. By running the playbook, the configuration is deployed and the service is restarted without manually logging into the server.
 # QUESTION C
 
 What is the disadvantage of having a task that _always_ makes sure a service is restarted, even if there is
 no configuration change?
 
+***Answer:*** The disadvantage is that the service will be restarted every time the playbook runs, even when there are no changes. This can cause unnecessary downtime or interruptions for users and applications, and it also wastes system resources. 
+
+It is generally better to restart the service only when a change has actually been made, for example by using notify and handlers in Ansible.
+
 # BONUS QUESTION
 
 There are at least two _other_ modules, in addition to the `ansible.builtin.service` module that can restart
 a `systemd` service with Ansible. Which modules are they?
+
+***Answer:*** Two other modules that can restart a systemd service are: 
+
+1. **ansible.builtin.systemd** – This module directly interacts with systemd and can start, stop, or restart services. 
+
+It provides more control and is specifically designed for systems using systemd.
+
+2. **ansible.builtin.command** – This module can run shell commands such as systemctl restart nginx. 
+
+   
+   However, it is less ideal because it is not idempotent and does not check the current service state.
