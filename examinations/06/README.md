@@ -119,6 +119,57 @@ HINTS:
   also set the correct SELinux security context type on the directory and files. The context in question
   in this case should be `httpd_sys_content_t` for the `/var/www/example.internal/html/` directory.
 
+
+***Answer:*** 
+```bash
+---
+- name: Configure HTTPS and virtual host for nginx
+  hosts: web
+  become: true
+  tasks:
+
+    - name: Copy HTTPS configuration
+      ansible.builtin.copy:
+        src: files/https.conf
+        dest: /etc/nginx/conf.d/https.conf
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Ensure the nginx configuration is updated for example.internal
+      ansible.builtin.copy:
+        src: files/example.internal.conf
+        dest: /etc/nginx/conf.d/example.internal.conf
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Create web root directory structure
+      ansible.builtin.file:
+        path: /var/www/example.internal/html
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+
+    - name: Upload index.html to web root
+      ansible.builtin.copy:
+        src: files/index.html
+        dest: /var/www/example.internal/html/index.html
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Restart nginx
+      ansible.builtin.service:
+        name: nginx
+        state: restarted
+```
+The playbook first copies the HTTPS configuration to the server so that nginx can serve secure traffic. Then it copies the virtual host configuration for example.internal, setting the server name, root directory, and SSL settings.
+
+ Next, it creates the directory structure /var/www/example.internal/html/ for the website, and uploads the index.html file into that directory. Finally, nginx is restarted to apply the new configuration.
+
+
 # QUESTION B
 
 To each of the tasks that change configuration files in the webserver, add a `register: [variable_name]`.
@@ -167,6 +218,13 @@ There are several ways to accomplish this, and there is no _best_ way to do this
 
 Is this a good way to handle these types of conditionals? What do you think?
 
+***Answer:*** In the playbook, register is used to capture the result of tasks that modify configuration files, and when: result.changed is used to conditionally restart nginx only if a change occurred. This ensures that nginx is not restarted unnecessarily, saving resources and avoiding downtime.
+
+My opinion:
+I think this is a good approach for handling conditionals. It makes the playbook idempotent, meaning it can be run multiple times without causing unintended changes. It also reduces unnecessary service restarts, which is especially important in environments where uptime matters. Using register together with when allows tasks to respond dynamically to changes, which makes the automation more intelligent and efficient.
+
+Overall, I would continue using this method because it balances safety, efficiency, and clarity in the playbook.
+
 # BONUS QUESTION
 
 Imagine you had a playbook with hundreds of tasks to be done on several hosts, and each one of these tasks
@@ -177,3 +235,38 @@ would you like the flow to work?
 
 Describe in simple terms what your preferred task flow would look like, not necessarily implemented in
 Ansible, but in general terms.
+
+
+***Answer:*** The best way to handle a playbook with hundreds of tasks that might require service restarts is to separate configuration changes from restarts. Here’s how I would structure it, including what Ansible functionality I’d use:
+
+Apply all configuration changes first
+
+Use modules like copy, template, or file to update configuration files and directories.
+
+This stage only changes configurations — no restarts yet.
+
+Track which tasks actually made changes
+
+Use the register keyword to save the result of each task.
+
+Each result can be checked with .changed to see if a change really happened.
+
+Restart or reload services only when needed
+
+Use the when condition with the service module so that restarts only happen if something actually changed.
+
+This avoids unnecessary downtime.
+
+Restart services in small groups instead of all at once
+
+In multi-host environments, use serial in Ansible to restart only a few hosts at a time.
+
+This way, some servers keep running while others restart, which helps prevent downtime.
+
+Verify that services are running after changes
+
+Use modules like systemd or command to check service status or test configurations after restart.
+
+This ensures that everything is working properly.
+
+**Summary:** This approach separates configuration changes from restarts, checks whether updates really happened, and restarts only when needed — and in small batches if multiple servers are involved.
