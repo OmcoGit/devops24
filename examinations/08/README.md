@@ -29,5 +29,51 @@ to authenticate as root:
 * Since we're authenticating through a socket, we should ignore the requirement for a `~/.my.cnf` file.
 * For simplicity's sake, let's grant `ALL` privileges on `webapp.*` to `webappuser`
 
+***Answer:***
+```yaml
+---
+- hosts: db
+  become: true
+  tasks:
+    - name: Ensure MariaDB-server is installed
+      ansible.builtin.package:
+        name: mariadb-server
+        state: present
+
+    - name: Ensure mariadb is enabled and started
+      ansible.builtin.service:
+        name: mariadb
+        enabled: true
+        state: started
+
+    - name: Ensure PyMySQL is installed for Ansible MySQL modules
+      ansible.builtin.package:
+        name: python3-PyMySQL
+        state: present
+
+    - name: Create a database named webappdb
+      community.mysql.mysql_db:
+        name: webappdb
+        state: present
+        login_unix_socket: /var/lib/mysql/mysql.sock
+
+    - name: Create a database user for the web application
+      community.mysql.mysql_user:
+        name: webappuser
+        password: secretpassword
+        priv: 'webappdb.*:ALL'
+        state: present
+        login_unix_socket: /var/lib/mysql/mysql.sock
+```
+*Explanation*:
+I copied the playbook from Examination 7 to 08-mariadb-config.yml and extended it to configure MariaDB for our web application.
+The playbook ensures that MariaDB is installed, enabled, and running, and also installs python3-PyMySQL so that Ansible can communicate with the database.
+
+It then creates a database named webappdb and a user webappuser with the password secretpassword.
+All privileges are granted to webappuser on the webappdb database.
+
+I use login_unix_socket: /var/lib/mysql/mysql.sock so Ansible can connect to MariaDB as root without a password. The socket is a special file that allows local programs, like PyMySQL, to communicate directly with the database using the operating system’s user credentials.
+
+
 # Documentation and Examples
 https://docs.ansible.com/ansible/latest/collections/community/mysql/index.html
