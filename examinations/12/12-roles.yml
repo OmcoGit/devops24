@@ -1,0 +1,17 @@
+---
+- name: Configure the web server(s)
+  hosts: web
+  become: true
+  vars_files:
+    - roles/web/vars/users.yml   # innehåller användarvariabler
+  roles:
+    - web
+
+- name: Configure the database server(s)
+  hosts: db
+  become: true
+  vars_files:
+    - roles/db/vars/secrets.yml  # innehåller db-lösenord etc.
+  roles:
+    - db
+
