@@ -51,3 +51,25 @@ servers:
 # Resources and Documentation
 
 https://firewalld.org/
+
+***Answer:*** To complete this task, I created an Ansible playbook called 14-firewall.yml.
+The playbook installs and enables firewalld and configures the necessary services for both the web and database servers.
+
+On all servers, the playbook installs firewalld and python3-firewall, then ensures that the firewalld service is enabled and running.
+
+On the webservers, it enables the http and https services.
+
+On the database servers, it enables the mysql service.
+
+After running the playbook, the firewall configuration can be verified with:
+```yaml
+sudo cat /etc/firewalld/zones/public.xml
+```
+
+The output confirms that:
+
+The webserver allows http and https services.
+
+The dbserver allows the mysql service.
+
+This ensures that only the required services are accessible while the servers remain protected by firewalld.
