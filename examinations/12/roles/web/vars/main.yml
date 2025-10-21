@@ -1,0 +1,18 @@
+users:
+  - name: alovelace
+    groups: ['wheel','audio','video']
+    comment: "Ada Lovelace"
+    password: "{{ 'AdaSecure123!' | password_hash('sha512') }}"
+  - name: aturing
+    groups: ['tape']
+    comment: "Alan Turing"
+    password: "{{ 'Turing123!' | password_hash('sha512') }}"
+  - name: edijkstra
+    groups: ['tcpdump']
+    comment: "Edsger Dijkstra"
+    password: "{{ 'Dijkstra123!' | password_hash('sha512') }}"
+  - name: ghopper
+    groups: ['wheel','audio']
+    comment: "Grace Hopper"
+    password: "{{ 'Hopper123!' | password_hash('sha512') }}"
+

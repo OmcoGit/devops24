@@ -1,0 +1,35 @@
+---
+# Ensure /etc/pki/nginx exists
+- name: Ensure the /etc/pki/nginx directory exists
+  ansible.builtin.file:
+    path: /etc/pki/nginx
+    state: directory
+    mode: "0755"
+    owner: root
+
+# Ensure /etc/pki/nginx/private exists
+- name: Ensure we have a /etc/pki/nginx/private directory
+  ansible.builtin.file:
+    path: /etc/pki/nginx/private
+    state: directory
+    mode: "0700"
+    owner: root
+
+# Ensure necessary software installed
+- name: Ensure we have necessary software installed
+  ansible.builtin.package:
+    name: python3-cryptography
+    state: present
+
+# Ensure private key exists
+- name: Ensure we have a private key for our certificate
+  community.crypto.openssl_privatekey:
+    path: /etc/pki/nginx/private/server.key
+
+# Create self-signed certificate
+- name: Create a self-signed certificate
+  community.crypto.x509_certificate:
+    path: /etc/pki/nginx/server.crt
+    privatekey_path: /etc/pki/nginx/private/server.key
+    provider: selfsigned
+

@@ -1,0 +1,11 @@
+---
+- name: Ensure users exist with correct groups, GECOS, and password
+  ansible.builtin.user:
+    name: "{{ item.name }}"
+    groups: "{{ item.groups | join(',') }}"
+    comment: "{{ item.comment | default(omit) }}"
+    password: "{{ item.password }}"
+    append: true
+    state: present
+  loop: "{{ users }}"
+  no_log: true
