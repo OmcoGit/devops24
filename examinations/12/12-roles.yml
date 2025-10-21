@@ -1,9 +1,15 @@
 ---
+- name: Configure all hosts with base software
+  hosts: all
+  become: true
+  roles:
+    - base
+
 - name: Configure the web server(s)
   hosts: web
   become: true
   vars_files:
-    - roles/web/vars/users.yml   # innehåller användarvariabler
+    - roles/web/vars/users.yml
   roles:
     - web
 
@@ -11,7 +17,7 @@
   hosts: db
   become: true
   vars_files:
-    - roles/db/vars/secrets.yml  # innehåller db-lösenord etc.
+    - roles/db/vars/secrets.yml
   roles:
     - db
 
