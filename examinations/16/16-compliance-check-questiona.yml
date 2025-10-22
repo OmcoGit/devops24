@@ -1,0 +1,110 @@
+---
+- name: Security Compliance Checks for AlmaLinux 10
+  hosts: all
+  gather_facts: yes
+  become: yes
+
+  tasks:
+
+  #1 Gather installed packages
+  - name: Gather installed packages
+    ansible.builtin.package_facts:
+
+  #2 Check telnet-server is not installed
+  - name: Check telnet-server is not installed
+    ansible.builtin.assert:
+      fail_msg: "telnet-server package is installed"
+      success_msg: "telnet-server package is not installed"
+      that: "'telnet-server' not in ansible_facts.packages"
+    ignore_errors: yes
+
+  #3 Check rsh-server is not installed
+  - name: Check rsh-server is not installed
+    ansible.builtin.assert:
+      fail_msg: "rsh-server package is installed"
+      success_msg: "rsh-server package is not installed"
+      that: "'rsh-server' not in ansible_facts.packages"
+    ignore_errors: yes
+
+  #4 Check ypserv is not installed
+  - name: Check ypserv is not installed
+    ansible.builtin.assert:
+      fail_msg: "ypserv package is installed"
+      success_msg: "ypserv package is not installed"
+      that: "'ypserv' not in ansible_facts.packages"
+    ignore_errors: yes
+
+  #5 SSH root login disabled
+  - name: Read SSH configuration
+    ansible.builtin.slurp:
+      src: /etc/ssh/sshd_config
+    register: ssh_config
+
+  - name: Assert SSH root login is disabled
+    ansible.builtin.assert:
+      that:
+        - "'PermitRootLogin no' in (ssh_config.content | b64decode)"
+      success_msg: "SSH root login is disabled"
+      fail_msg: "SSH root login is enabled"
+    ignore_errors: yes
+
+  #6 /tmp permissions
+  - name: Check /tmp directory permissions
+    ansible.builtin.stat:
+      path: /tmp
+    register: tmp_dir
+
+  - name: Assert /tmp permissions are 1777
+    ansible.builtin.assert:
+      that:
+        - tmp_dir.stat.mode == '1777'
+      success_msg: "/tmp has correct permissions"
+      fail_msg: "/tmp has incorrect permissions"
+    ignore_errors: yes
+
+  #7 Firewalld running
+  - name: Gather service facts
+    ansible.builtin.service_facts:
+
+  - name: Assert firewalld is running
+    ansible.builtin.assert:
+      that:
+        - "'firewalld' in ansible_facts.services"
+        - ansible_facts.services['firewalld'].state == 'running'
+      success_msg: "Firewalld is running"
+      fail_msg: "Firewalld is not running"
+    ignore_errors: yes
+
+  #8 Rsyslog running
+  - name: Assert rsyslog is running
+    ansible.builtin.assert:
+      that:
+        - "'rsyslog' in ansible_facts.services"
+        - ansible_facts.services['rsyslog'].state == 'running'
+      success_msg: "Rsyslog is running"
+      fail_msg: "Rsyslog is not running"
+    ignore_errors: yes
+
+  #9 Sudo logging
+  - name: Check sudo log file exists
+    ansible.builtin.stat:
+      path: /var/log/sudo.log
+    register: sudo_log
+
+  - name: Assert sudo log file exists
+    ansible.builtin.assert:
+      that:
+        - sudo_log.stat.exists
+      success_msg: "Sudo log file exists"
+      fail_msg: "Sudo log file does not exist"
+    ignore_errors: yes
+
+  #10 Systemd-journald service
+  - name: Assert systemd-journald is running
+    ansible.builtin.assert:
+      that:
+        - "'systemd-journald' in ansible_facts.services"
+        - ansible_facts.services['systemd-journald'].state == 'running'
+      success_msg: "Systemd-journald service is running"
+      fail_msg: "Systemd-journald service is not running"
+    ignore_errors: yes

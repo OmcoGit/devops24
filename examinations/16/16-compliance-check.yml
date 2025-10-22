@@ -1,0 +1,8 @@
+---
+- name: Security Compliance Checks for AlmaLinux 10
+  hosts: all
+  gather_facts: yes
+  become: yes
+
+  roles:
+    - compliance
