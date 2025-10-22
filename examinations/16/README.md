@@ -51,11 +51,63 @@ For instance:
             success_msg: telnet-server package is not installed
             that: "'telnet-server' not in ansible_facts.packages"
 
-It is up to you to implement the solution you feel works best.
+It is up to you to implement the solution you feel works best. 
+
+***Answer:*** 
+**Implementation**: I created an Ansible playbook 16-compliance-check.yml that performs 10 CIS Security Benchmark checks for AlmaLinux 10. The playbook uses modules like package_facts, assert, stat, service_facts, and slurp to gather facts and assert compliance. No changes are made to the servers; all checks only report compliance status.
+Ensure telnet-server is not installed.
+
+I included ignore_errors: yes for each task because some servers may not currently meet the CIS requirements (e.g., SSH root login is enabled, firewalld is not running). This ensures the playbook continues to run all checks and reports the compliance status for every item, instead of stopping at the first failure. This approach allows a complete overview of the system's CIS compliance.
+
+
+
+
+Ensure telnet-server is not installed.
+
+Ensure rsh-server is not installed.
+
+Ensure ypserv is not installed.
+
+Ensure SSH root login is disabled.
+
+Ensure /tmp directory permissions are 1777.
+
+Ensure firewalld service is running.
+
+Ensure rsyslog service is running.
+
+Ensure /var/log/sudo.log exists.
+
+Ensure systemd-journald service is running.
+
+Ensure any additional necessary CIS services or packages (as applicable).
+
+***Results***
+The playbook was run on the virtual machines and reported which checks passed and which did not:
+
+Packages like telnet, rsh, and ypserv were not installed → compliant.
+
+SSH root login is still allowed → not compliant.
+
+/tmp permissions were correct → compliant. etc.
 
 # BONUS QUESTION
 
 If you implement these tasks within one or more roles, you will gain enlightenment and additional karma.
+
+
+***Answer:***
+For the bonus part, I implemented the CIS compliance checks as an Ansible role called compliance. All 10 tasks were moved into the role’s tasks/main.yml file, and optional variables (e.g., package and service names) were defined in vars/main.yml. This structure allows the playbook to remain minimal while the role encapsulates all the compliance logic.
+
+By using a role:
+
+The tasks are modular and reusable across different servers.
+
+It is easier to maintain and extend with additional checks in the future.
+
+The playbook becomes cleaner, improving readability and organization.
+
+The main playbook simply includes the role, which can be executed safely to check CIS compliance on any AlmaLinux 10 host.
 
 # Resources
 
