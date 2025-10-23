@@ -1,0 +1,7 @@
+# Denna konfiguration är skapad för att tillåta längre rader (max 160 tecken)
+# för att våra playbooks med långa URL:er och paths ska bli yamllint-clean.
+# .yamllint
+extends: default
+rules:
+  line-length:
+    max: 160
