@@ -1,0 +1,54 @@
+---
+- name: Configure HTTPS and virtual host for nginx with SELinux
+  hosts: web
+  become: true
+
+  tasks:
+    - name: Copy HTTPS configuration
+      ansible.builtin.copy:
+        src: files/https.conf
+        dest: /etc/nginx/conf.d/https.conf
+        owner: root
+        group: root
+        mode: '0644'
+      register: https_result
+
+    - name: Deploy nginx configuration from template
+      ansible.builtin.template:
+        src: templates/example.internal.conf.j2
+        dest: /etc/nginx/conf.d/example.internal.conf
+        owner: root
+        group: root
+        mode: '0644'
+      register: example_result
+      notify: Reload nginx
+
+    - name: Create web root directory structure
+      ansible.builtin.file:
+        path: /var/www/example.internal/html
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+      register: webroot_result
+
+    - name: Upload index.html to web root
+      ansible.builtin.copy:
+        src: files/index.html
+        dest: /var/www/example.internal/html/index.html
+        owner: root
+        group: root
+        mode: '0644'
+      register: index_result
+
+    - name: Apply correct SELinux context recursively
+      ansible.builtin.command:
+        cmd: restorecon -Rv /var/www/example.internal/html
+      when: webroot_result.changed or index_result.changed
+      changed_when: false
+
+  handlers:
+    - name: Reload nginx
+      ansible.builtin.service:
+        name: nginx
+        state: reloaded

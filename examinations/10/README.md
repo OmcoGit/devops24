@@ -102,3 +102,11 @@ This makes the configuration portable and adaptable across different servers wit
 * https://docs.ansible.com/ansible/latest/collections/ansible/builtin/template_module.html
 * https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_variables.html
 * https://nginx.org/en/docs/http/ngx_http_core_module.html#listen
+
+
+***Linting and Best Practice Improvements:***
+Handler for nginx reload: Flyttade nginx-reloaden till en dedikerad handler (Reload nginx) som endast körs när templaten ändras. Detta följer Ansible-best practices och gör playbooken mer idempotent och effektiv.
+
+Säkra filrättigheter: Lagt till mode: '0644' när index.html laddas upp, vilket säkerställer att filen får rätt och säkra åtkomsträttigheter.
+
+Idempotent SELinux-task: Lagt till changed_when: false på restorecon-tasken som sätter SELinux-kontext, för att undvika falska ändringsrapporter och säkerställa att tasken inte påverkar playbookens idempotens.
