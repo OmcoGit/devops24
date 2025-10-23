@@ -1,0 +1,59 @@
+---
+- name: Configure HTTPS and virtual host for nginx with SELinux
+  hosts: web
+  become: true
+  tasks:
+
+    # Kopiera HTTPS-konfiguration
+    - name: Copy HTTPS configuration
+      ansible.builtin.copy:
+        src: files/https.conf
+        dest: /etc/nginx/conf.d/https.conf
+        owner: root
+        group: root
+        mode: '0644'
+      register: https_result
+
+    # Kopiera virtual host-konfiguration
+    - name: Ensure nginx configuration is updated for example.internal
+      ansible.builtin.copy:
+        src: files/example.internal.conf
+        dest: /etc/nginx/conf.d/example.internal.conf
+        owner: root
+        group: root
+        mode: '0644'
+      register: example_result
+
+    # Skapa katalogstruktur för webbsidan
+    - name: Create web root directory structure
+      ansible.builtin.file:
+        path: /var/www/example.internal/html
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+      register: webroot_result
+
+    # Ladda upp index.html
+    - name: Upload index.html to web root
+      ansible.builtin.copy:
+        src: files/index.html
+        dest: /var/www/example.internal/html/index.html
+        owner: root
+        group: root
+        mode: '0644'
+      register: index_result
+
+    # Sätt SELinux context på katalog + filer
+    - name: Apply correct SELinux context recursively
+      ansible.builtin.command:
+        cmd: restorecon -Rv /var/www/example.internal/html
+      when: webroot_result.changed or index_result.changed
+
+    # Restart nginx om någon av konfigurationerna har ändrats
+    - name: Restart nginx if configuration changed
+      ansible.builtin.service:
+        name: nginx
+        state: restarted
+      when: https_result.changed or example_result.changed
+
