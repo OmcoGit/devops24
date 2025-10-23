@@ -7,7 +7,7 @@
     owner: root
     group: root
     mode: '0644'
-  register: https_result
+  notify: Reload nginx
 
 # Deploy example.internal.conf from template
 - name: Deploy nginx configuration from template
@@ -17,14 +17,7 @@
     owner: root
     group: root
     mode: '0644'
-  register: example_result
-
-# Reload nginx if configuration changed
-- name: Reload nginx if configuration changed
-  ansible.builtin.service:
-    name: nginx
-    state: reloaded
-  when: example_result.changed
+  notify: Reload nginx
 
 # Skapa katalogstruktur för webbsidan
 - name: Create web root directory structure
@@ -34,7 +27,6 @@
     owner: root
     group: root
     mode: '0755'
-  register: webroot_result
 
 # Ladda upp index.html
 - name: Upload index.html to web root
@@ -43,11 +35,16 @@
     dest: /var/www/example.internal/html/index.html
     owner: root
     group: root
-  register: index_result
+    mode: '0644'
 
 # Sätt SELinux context på katalog + filer
 - name: Apply correct SELinux context recursively
   ansible.builtin.command:
     cmd: restorecon -Rv /var/www/example.internal/html
-  when: webroot_result.changed or index_result.changed
+  changed_when: false
 
+# Handlers
+- name: Reload nginx
+  ansible.builtin.service:
+    name: nginx
+    state: reloaded

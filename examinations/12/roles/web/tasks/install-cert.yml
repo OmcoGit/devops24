@@ -32,4 +32,3 @@
     path: /etc/pki/nginx/server.crt
     privatekey_path: /etc/pki/nginx/private/server.key
     provider: selfsigned
-

@@ -4,4 +4,3 @@
   ansible.builtin.package:
     name: "vim,bash-completion,qemu-guest-agent"
     state: present
-

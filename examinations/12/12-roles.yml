@@ -20,4 +20,3 @@
     - roles/db/vars/secrets.yml
   roles:
     - db
-

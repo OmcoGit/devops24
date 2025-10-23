@@ -1,4 +1,5 @@
 ---
-- import_tasks: 09-mariadb-password.yml
-- import_tasks: 11-copy-md-files.yml
-
+- name: Import MariaDB password tasks
+  ansible.builtin.import_tasks: 09-mariadb-password.yml
+- name: Import copy Markdown files tasks
+  ansible.builtin.import_tasks: 11-copy-md-files.yml
