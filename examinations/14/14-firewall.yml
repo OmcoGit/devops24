@@ -1,26 +1,32 @@
-- name: Ensure firewalld is running and enabled
-  ansible.builtin.service:
-    name: firewalld
-    state: started
-    enabled: true
+---
+- name: Configure firewall on all hosts
+  hosts: all
+  become: true
 
-- name: Allow HTTP service
-  ansible.posix.firewalld:
-    service: http
-    permanent: true
-    state: enabled
-    immediate: true
+  tasks:
+    - name: Ensure firewalld is running and enabled
+      ansible.builtin.service:
+        name: firewalld
+        state: started
+        enabled: true
 
-- name: Allow HTTPS service
-  ansible.posix.firewalld:
-    service: https
-    permanent: true
-    state: enabled
-    immediate: true
+    - name: Allow HTTP service
+      ansible.posix.firewalld:
+        service: http
+        permanent: true
+        state: enabled
+        immediate: true
 
-- name: Allow MySQL service
-  ansible.posix.firewalld:
-    service: mysql
-    permanent: true
-    state: enabled
-    immediate: true
+    - name: Allow HTTPS service
+      ansible.posix.firewalld:
+        service: https
+        permanent: true
+        state: enabled
+        immediate: true
+
+    - name: Allow MySQL service
+      ansible.posix.firewalld:
+        service: mysql
+        permanent: true
+        state: enabled
+        immediate: true

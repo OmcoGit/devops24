@@ -1,0 +1,16 @@
+[all:vars]
+ansible_user=deploy
+ansible_ssh_private_key_file=/home/oms/Documents/devops24/lab_environment/deploy_key
+ansible_become_pass=oms
+
+[db]
+192.168.121.105
+
+[web]
+192.168.121.118
+
+[node_exporter_targets:children]
+web
+db
+
+
