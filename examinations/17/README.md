@@ -36,3 +36,56 @@ provided instead.
 To be able to use the password when running the playbooks later, you must use the `--ask-become-pass`
 option to `ansible` and `ansible-playbook` to provide the password. You can also place the password
 in a file, like with `ansible-vault`, or have it encrypted via `ansible-vault`.
+
+***Answer:***
+Steps Taken:
+
+Set a password for the deploy user:
+
+Created a SHA512 hash of the password oms using openssl passwd -6 oms.
+
+Updated the deploy user password via the Ansible module ansible.builtin.user.
+
+Verified login with the new password.
+
+Update sudoers file:
+
+The original /etc/sudoers.d/deploy contained:
+```sql
+%deploy ALL=(ALL) NOPASSWD:ALL
+```
+Using Ansible’s lineinfile module, the file was updated with:
+```yaml
+regexp: '^%?deploy'
+line: 'deploy ALL=(ALL) ALL'
+validate: 'visudo -cf %s'
+```
+This replaced any passwordless sudo rules for both the deploy user and %deploy group, enforcing a password requirement.
+
+File permissions were maintained correctly (0440).
+
+Verification:
+
+Logged in as deploy on the virtual machines.
+
+Tested sudo commands with:
+```bash
+sudo -k
+sudo whoami
+```
+Confirmed that sudo now requires the password and functions correctly.
+
+###### Outcome:
+
+Passwordless sudo rules were successfully removed for both the user and the group.
+
+The deploy user retains full sudo privileges but must now authenticate with a password.
+
+The solution is idempotent; the playbook can be run multiple times without further changes.
+
+###### Notes: 
+Always validate /etc/sudoers.d changes using visudo to avoid locking out users.
+
+The regex ^%?deploy ensures that both user and group NOPASSWD entries are handled.
+
+Using ansible.builtin.user with password_hash allows secure automated password management.
