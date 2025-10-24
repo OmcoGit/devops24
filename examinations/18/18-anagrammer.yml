@@ -1,0 +1,13 @@
+---
+- name: Test custom anagrammer module
+  hosts: localhost
+  gather_facts: false
+
+  vars:
+    # Default message; can be overridden with --extra-vars
+    message: "hello world"
+
+  tasks:
+    - name: Run anagrammer module
+      anagrammer:
+        message: "{{ message }}"
