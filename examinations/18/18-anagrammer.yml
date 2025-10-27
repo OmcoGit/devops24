@@ -11,3 +11,8 @@
     - name: Run anagrammer module
       anagrammer:
         message: "{{ message }}"
+      register: result
+
+    - name: Print Result
+      ansible.builtin.debug:
+        var: result
