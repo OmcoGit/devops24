@@ -4,6 +4,11 @@
   become: true
 
   tasks:
+    - name: Ensure firewalld is installed
+      ansible.builtin.package:
+       name: firewalld
+       state: present
+
     - name: Ensure firewalld is running and enabled
       ansible.builtin.service:
         name: firewalld
