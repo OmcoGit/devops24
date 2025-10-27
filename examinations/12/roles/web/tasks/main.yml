@@ -1,8 +1,8 @@
 ---
-- name: Import webserver tasks
-  ansible.builtin.import_tasks: webserver.yml
 - name: Import install-cert tasks
   ansible.builtin.import_tasks: install-cert.yml
+- name: Import webserver tasks
+  ansible.builtin.import_tasks: webserver.yml
 - name: Import 10-web-template tasks
   ansible.builtin.import_tasks: 10-web-template.yml
 - name: Import 11-users tasks

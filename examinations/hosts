@@ -4,10 +4,10 @@ ansible_ssh_private_key_file=~/Documents/devops24/vagrantnew/deploy_key
 ansible_become_pass=oms
 
 [db]
-dbserver ansible_host=192.168.121.154
+dbserver ansible_host=192.168.121.253
 
 [web]
-webserver ansible_host=192.168.121.76
+webserver ansible_host=192.168.121.114
 
 [node_exporter_targets:children]
 web
